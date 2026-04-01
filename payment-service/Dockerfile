@@ -1,10 +1,13 @@
-FROM eclipse-temurin:25-jdk AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src src
-RUN apt-get update && apt-get install -y maven && \
-    mvn clean package -DskipTests && \
-    apt-get remove -y maven && rm -rf /var/lib/apt/lists/*
+
+COPY payment-service/pom.xml .
+COPY base-domain/pom.xml base-domain/
+COPY base-domain/src base-domain/src/
+COPY payment-service/src src/
+
+RUN cd base-domain && mvn clean install -DskipTests && \
+    cd .. && mvn clean package -DskipTests
 
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
